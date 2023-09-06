@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "sync.h": "c",
+        "assert.h": "c",
+        "stdbool.h": "c",
+        "freertos.h": "c",
+        "pico.h": "c",
+        "stdint.h": "c"
+    }
+}
