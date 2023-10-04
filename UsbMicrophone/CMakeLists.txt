@@ -3,3 +3,4 @@ target_sources(CommonCode INTERFACE
 )
 
 add_subdirectory(Config)
+add_subdirectory(Platform)
