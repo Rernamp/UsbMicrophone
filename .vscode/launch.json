@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "WCH-Link Devboard",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "configFiles": [
+                "${workspaceRoot}/wch-riscv.cfg"
+            ],
+            "rtos": "auto",
+            "searchDir": ["${workspaceRoot}"],
+            "showDevDebugOutput":"raw"
+        }
+    ]
+}

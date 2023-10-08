@@ -66,7 +66,7 @@ target_sources(PlatformCH32V307 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_tim.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_usart.c
     ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_wwdg.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_ch32v30x_D8.S
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_ch32v30x_D8.S
     ${CMAKE_CURRENT_SOURCE_DIR}/Startup/startup_ch32v30x_D8C.S
     ${CMAKE_CURRENT_SOURCE_DIR}/User/ch32v30x_conf.h
     ${CMAKE_CURRENT_SOURCE_DIR}/User/ch32v30x_it.c
@@ -74,3 +74,5 @@ target_sources(PlatformCH32V307 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/User/system_ch32v30x.c
     ${CMAKE_CURRENT_SOURCE_DIR}/User/system_ch32v30x.h
 )
+
+add_subdirectory(FreeRTOS)

@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.16)
 
 add_library(FreertosCH32V307 INTERFACE)
-target_include_directories(FreertosCH32V307 INTERFACE "Src")
-
+target_include_directories(FreertosCH32V307 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+target_include_directories(FreertosCH32V307 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/portable/GCC/RISC-V)
+target_include_directories(FreertosCH32V307 INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/portable/GCC/RISC-V/chip_specific_extensions/RV32I_PFIC_no_extensions)
 
 target_sources(FreertosCH32V307 INTERFACE 
     ${CMAKE_CURRENT_SOURCE_DIR}/croutine.c
@@ -31,7 +32,7 @@ target_sources(FreertosCH32V307 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/include/stream_buffer.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/task.h
     ${CMAKE_CURRENT_SOURCE_DIR}/include/timers.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/portable/Common/mpu_wrappers.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/portable/Common/mpu_wrappers.c    // Omg WCH disabled this file, lol
     ${CMAKE_CURRENT_SOURCE_DIR}/portable/GCC/RISC-V
     ${CMAKE_CURRENT_SOURCE_DIR}/portable/GCC/RISC-V/port.c
     ${CMAKE_CURRENT_SOURCE_DIR}/portable/GCC/RISC-V/portASM.S
