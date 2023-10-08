@@ -3,9 +3,11 @@
 * Author             : WCH
 * Version            : V1.0.0
 * Date               : 2021/06/06
-* Description        : CH32V307x-CH32V305x vector table for eclipse toolchain.
+* Description        : CH32V307-CH32V305 vector table for eclipse toolchain.
+*********************************************************************************
 * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* SPDX-License-Identifier: Apache-2.0
+* Attention: This software (modified or not) and binary are used for 
+* microcontroller manufactured by Nanjing Qinheng Microelectronics.
 *******************************************************************************/
 
 	.section	.init,"ax",@progbits
@@ -368,11 +370,11 @@ handle_reset:
     csrw 0xbc0, t0
 
     /* Enable nested and hardware stack */
-	li t0, 0x0b
+	li t0, 0x1f
 	csrw 0x804, t0
 
     /* Enable floating point and interrupt */
-   	li t0, 0x6088           
+   	li t0, 0x7800
    	csrs mstatus, t0
 
  	la t0, _vector_base
@@ -387,5 +389,4 @@ handle_reset:
 	la t0, main
 	csrw mepc, t0
 	mret
-
 
