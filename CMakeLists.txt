@@ -18,9 +18,11 @@ add_executable(Application)
 
 add_library(CommonCode INTERFACE)
 
+include(Dependencies/Mcu.CMake/riscv/CH32/V307.cmake)
+
 
 target_link_libraries(CommonCode INTERFACE
-    
+    CH32::V307
 )
 
 add_subdirectory(UsbMicrophone)
