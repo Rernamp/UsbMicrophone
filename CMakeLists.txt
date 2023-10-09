@@ -20,7 +20,9 @@ add_library(CommonCode INTERFACE)
 
 include(Dependencies/Mcu.CMake/riscv/CH32/V307.cmake)
 
-add_library(tinyusb_config INTERFACE)
+add_subdirectory(UsbMicrophone)
+
+target_compile_definitions(tinyusb_config INTERFACE CFG_TUSB_MCU=OPT_MCU_CH32V307)
 
 add_subdirectory(Dependencies/tinyusb/src)
 
@@ -30,7 +32,7 @@ target_link_libraries(CommonCode INTERFACE
     tinyusb
 )
 
-add_subdirectory(UsbMicrophone)
+
 
 if(NOT (TARGET GCC::Specs::NoSys))
     add_library(GCC::Specs::NoSys INTERFACE IMPORTED)
