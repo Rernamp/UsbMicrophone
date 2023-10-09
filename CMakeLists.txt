@@ -20,9 +20,14 @@ add_library(CommonCode INTERFACE)
 
 include(Dependencies/Mcu.CMake/riscv/CH32/V307.cmake)
 
+add_library(tinyusb_config INTERFACE)
+
+add_subdirectory(Dependencies/tinyusb/src)
+
 
 target_link_libraries(CommonCode INTERFACE
     CH32::V307
+    tinyusb
 )
 
 add_subdirectory(UsbMicrophone)
