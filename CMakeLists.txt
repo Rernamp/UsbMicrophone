@@ -28,11 +28,13 @@ add_library(tinyusb_ch32v307 INTERFACE)
 target_sources(tinyusb_ch32v307 INTERFACE 
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/ch32_usbhs_reg.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/dcd_usbhs.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/dcd_template.c 
+    # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/hcd_template.c
 )
  
 target_link_libraries(tinyusb_config INTERFACE 
     tinyusb_ch32v307
-    PlatformCH32V307
+    ch32v307_tinyusb_platform
 )
 target_compile_definitions(tinyusb_config INTERFACE CFG_TUSB_MCU=OPT_MCU_CH32V307)
 
@@ -41,7 +43,7 @@ add_subdirectory(Dependencies/tinyusb/src)
 
 target_link_libraries(CommonCode INTERFACE
     CH32::V307
-    # tinyusb    
+    tinyusb    
 )
 
 if(NOT (TARGET GCC::Specs::NoSys))
@@ -65,8 +67,6 @@ target_link_libraries(Application PRIVATE
     GCC::Specs::NoSys
 	GCC::Specs::Nano
 )
-
-add_tinyusb(Application)
 
 function(gcc_add_linker_script TARGET VISIBILITY SCRIPT_PATH)
     message("Link: ${SCRIPT_PATH}")

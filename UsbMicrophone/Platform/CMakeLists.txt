@@ -76,3 +76,19 @@ target_sources(PlatformCH32V307 INTERFACE
 )
 
 add_subdirectory(FreeRTOS)
+
+add_library(ch32v307_tinyusb_platform INTERFACE)
+target_sources(ch32v307_tinyusb_platform INTERFACE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core/core_riscv.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_gpio.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_misc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_rcc.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/src/ch32v30x_usart.c
+)
+
+target_include_directories(ch32v307_tinyusb_platform INTERFACE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/Peripheral/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/Core
+    ${CMAKE_CURRENT_SOURCE_DIR}/Debug
+    ${CMAKE_CURRENT_SOURCE_DIR}/User
+)

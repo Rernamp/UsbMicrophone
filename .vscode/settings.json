@@ -18,6 +18,10 @@
         "deprecated_definitions.h": "c",
         "system_ch32v30x.h": "c",
         "ch32v30x_rcc.h": "c",
-        "ch32v30x_sdio.h": "c"
+        "ch32v30x_sdio.h": "c",
+        "dcd.h": "c",
+        "ch32_usbhs_reg.h": "c",
+        "core_riscv.h": "c",
+        "tusb_option.h": "c"
     }
 }
