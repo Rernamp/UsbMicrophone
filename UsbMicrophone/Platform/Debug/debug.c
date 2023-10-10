@@ -153,7 +153,7 @@ void USART_Printf_Init(uint32_t baudrate)
 __attribute__((used)) int _write(int fd, char *buf, int size)
 {
     int i;
-
+    (void)(fd);
     for(i = 0; i < size; i++)
     {
 #if(DEBUG == DEBUG_UART1)
@@ -191,6 +191,6 @@ void *_sbrk(ptrdiff_t incr)
     return curbrk - incr;
 }
 
-void _fini(){}
-void _init(){}
+void _fini(void){}
+void _init(void){}
 

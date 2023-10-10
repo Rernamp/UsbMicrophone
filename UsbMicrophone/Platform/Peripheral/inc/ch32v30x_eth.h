@@ -953,9 +953,9 @@ Wake-UpFrame Filter Re7 : Filter3 CRC16 - Filter2 CRC16 */
 #define ETH_MACA3LR_MACA3L   ((unsigned int)0xFFFFFFFF)  /* MAC address3 low */
 
 /******************************************************************************/
-/*
-/*                          ETH MMC Register
-/*
+/**/
+/*                          ETH MMC Register                                  */
+/**/
 /******************************************************************************/
 #define ETH_MMCCR_MCFHP      ((unsigned int)0x00000020)  /* MMC counter Full-Half preset */
 #define ETH_MMCCR_MCP        ((unsigned int)0x00000010)  /* MMC counter preset */

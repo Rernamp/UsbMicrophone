@@ -124,7 +124,7 @@ typedef struct
  *
  * @return  none
  */
-RV_STATIC_INLINE void __enable_irq()
+RV_STATIC_INLINE void __enable_irq(void)
 {
   __asm volatile ("csrw 0x800, %0" : : "r" (0x6088) );
 }
@@ -136,7 +136,7 @@ RV_STATIC_INLINE void __enable_irq()
  *
  * @return  none
  */
-RV_STATIC_INLINE void __disable_irq()
+RV_STATIC_INLINE void __disable_irq(void)
 {
   __asm volatile ("csrw 0x800, %0" : : "r" (0x6000) );
 }
@@ -148,7 +148,7 @@ RV_STATIC_INLINE void __disable_irq()
  *
  * @return  none
  */
-RV_STATIC_INLINE void __NOP()
+RV_STATIC_INLINE void __NOP(void)
 {
   __asm volatile ("nop");
 }
