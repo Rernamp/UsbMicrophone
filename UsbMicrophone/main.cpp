@@ -36,6 +36,43 @@
 #include <string.h>
 
 #include "tusb.h"
+#include "device/dcd.h"
+
+#include "debug.h"
+#include "FreeRTOS.h"
+#include "task.h"
+
+
+void dcd_sof_enable(uint8_t rhport, bool en) {
+  (void) rhport;
+  (void) en;
+
+  // TODO implement later
+}
+
+void GPIO_Toggle_INIT(void) {
+  GPIO_InitTypeDef  GPIO_InitStructure={0};
+
+  RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOC,ENABLE);
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2|GPIO_Pin_1;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+  GPIO_InitStructure.GPIO_Speed=GPIO_Speed_50MHz;
+  GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
+
+
+void USBHS_IRQHandler (void) __attribute__((naked));
+void USBHS_IRQHandler (void)
+{
+  __asm volatile ("call USBHS_IRQHandler_impl; mret");
+}
+
+__attribute__ ((used)) void USBHS_IRQHandler_impl (void)
+{
+  tud_int_handler(0);
+}
+
+
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
@@ -76,10 +113,20 @@ uint16_t startVal = 0;
 void led_blinking_task(void);
 void audio_task(void);
 
-/*------------- MAIN -------------*/
+
+/*------------- MAIN ---------B----*/
 extern "C" int main(void) {
     // TODO add init system
     // init device stack on configured roothub port
+    GPIO_Toggle_INIT();
+
+    RCC_USBCLK48MConfig(RCC_USBCLK48MCLKSource_USBPHY);
+    RCC_USBHSPLLCLKConfig(RCC_HSBHSPLLCLKSource_HSE);
+    RCC_USBHSConfig(RCC_USBPLL_Div2);
+    RCC_USBHSPLLCKREFCLKConfig(RCC_USBHSPLLCKREFCLK_4M);
+    RCC_USBHSPHYPLLALIVEcmd(ENABLE);
+    RCC_AHBPeriphClockCmd(RCC_AHBPeriph_USBHS, ENABLE);
+    
     tud_init(BOARD_TUD_RHPORT);
 
     // Init values
@@ -90,7 +137,6 @@ extern "C" int main(void) {
     sampleFreqRng.subrange[0].bMin = AUDIO_SAMPLE_RATE;
     sampleFreqRng.subrange[0].bMax = AUDIO_SAMPLE_RATE;
     sampleFreqRng.subrange[0].bRes = 0;
-
     while (1)
     {
         tud_task(); // tinyusb device task
@@ -432,10 +478,16 @@ void led_blinking_task(void)
   static uint32_t start_ms = 0;
   static bool led_state = false;
 
-  // Blink every interval ms
-//   if ( board_millis() - start_ms < blink_interval_ms) return; // not enough time
-//   start_ms += blink_interval_ms;
+//   Blink every interval ms
+//   vTaskDelay(50);
 
-//   board_led_write(led_state);
-//   led_state = 1 - led_state; // toggle
+    for (volatile std::size_t i = 1000; i != 0; --i) {
+        
+    }
+  if (led_state) {
+    GPIO_SetBits(GPIOC, GPIO_Pin_2);
+  } else {
+    GPIO_ResetBits(GPIOC, GPIO_Pin_2);
+  }
+  led_state = 1 - led_state; // toggle
 }
