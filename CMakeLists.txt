@@ -28,8 +28,17 @@ add_library(tinyusb_ch32v307 INTERFACE)
 target_sources(tinyusb_ch32v307 INTERFACE 
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/ch32_usbhs_reg.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/dcd_usbhs.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/board_api.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/board.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/debug_uart.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/debug_uart.h
     # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/dcd_template.c 
     # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/hcd_template.c
+)
+
+target_include_directories(tinyusb_ch32v307 INTERFACE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw
+    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/
 )
  
 target_link_libraries(tinyusb_config INTERFACE 
@@ -62,7 +71,7 @@ endif()
 
 target_link_libraries(Application PRIVATE
     CommonCode
-    FreertosCH32V307
+    # FreertosCH32V307
     PlatformCH32V307
     GCC::Specs::NoSys
 	GCC::Specs::Nano
