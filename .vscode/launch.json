@@ -11,7 +11,7 @@
             "configFiles": [
                 "${workspaceRoot}/wch-riscv.cfg"
             ],
-            "rtos": "auto",
+            // "rtos": "auto",
             "searchDir": ["${workspaceRoot}"],
             "showDevDebugOutput":"raw"
         }

@@ -46,11 +46,12 @@ void dcd_sof_enable(uint8_t rhport, bool en) {
   // TODO implement later
 }
 
-void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) {
-  (void)rhport;
-  (void)ep_addr;
-  return;
-}
+// void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) {
+    
+//   (void)rhport;
+//   (void)ep_addr;
+//   return;
+// }
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
