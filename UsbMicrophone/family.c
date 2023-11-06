@@ -30,6 +30,7 @@
 
 #include "bsp/board_api.h"
 #include "board.h"
+#include "device/dcd.h"
 
 //--------------------------------------------------------------------+
 // Forward USB interrupt events to TinyUSB IRQ Handler
@@ -45,6 +46,17 @@ __attribute__ ((used)) void USBHS_IRQHandler_impl (void)
 {
   tud_int_handler(0);
 }
+
+void dcd_sof_enable(uint8_t rhport, bool en) {
+    (void)rhport;
+    (void)en;
+}
+
+void dcd_edpt_close(uint8_t rhport, uint8_t ep_addr) {
+    (void)rhport;
+    (void)ep_addr;
+}
+
 
 //--------------------------------------------------------------------+
 // MACRO TYPEDEF CONSTANT ENUM

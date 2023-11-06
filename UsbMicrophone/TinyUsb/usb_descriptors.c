@@ -1,7 +1,8 @@
 /*
  * The MIT License (MIT)
  *
- * Copyright (c) 2019 Ha Thach (tinyusb.org)
+ * Copyright (c) 2020 Ha Thach (tinyusb.org)
+ * Copyright (c) 2020 Jerzy Kasenberg
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,8 +24,9 @@
  *
  */
 
-
+#include "bsp/board_api.h"
 #include "tusb.h"
+#include "usb_descriptors.h"
 
 /* A combination of interfaces must have a unique product id, since PC will save device driver after the first plug.
  * Same VID/PID with different interface e.g MSC (first), then CDC (later) will possibly cause system error on PC.
@@ -67,32 +69,40 @@ tusb_desc_device_t const desc_device =
 // Application return pointer to descriptor
 uint8_t const * tud_descriptor_device_cb(void)
 {
-  return (uint8_t const *) &desc_device;
+  return (uint8_t const *)&desc_device;
 }
 
 //--------------------------------------------------------------------+
 // Configuration Descriptor
 //--------------------------------------------------------------------+
-enum
-{
-  ITF_NUM_AUDIO_CONTROL = 0,
-  ITF_NUM_AUDIO_STREAMING,
-  ITF_NUM_TOTAL
-};
-
-#define CONFIG_TOTAL_LEN    	(TUD_CONFIG_DESC_LEN + CFG_TUD_AUDIO * TUD_AUDIO_MIC_ONE_CH_DESC_LEN)
+#define CONFIG_TOTAL_LEN    	(TUD_CONFIG_DESC_LEN + CFG_TUD_AUDIO * TUD_AUDIO_HEADSET_STEREO_DESC_LEN)
 
 #if CFG_TUSB_MCU == OPT_MCU_LPC175X_6X || CFG_TUSB_MCU == OPT_MCU_LPC177X_8X || CFG_TUSB_MCU == OPT_MCU_LPC40XX
   // LPC 17xx and 40xx endpoint type (bulk/interrupt/iso) are fixed by its number
   // 0 control, 1 In, 2 Bulk, 3 Iso, 4 In etc ...
-  #define EPNUM_AUDIO   0x03
+  #define EPNUM_AUDIO_IN    0x03
+  #define EPNUM_AUDIO_OUT   0x03
 
-#elif TU_CHECK_MCU(OPT_MCU_NRF5X)
-  // nRF5x ISO can only be endpoint 8
-  #define EPNUM_AUDIO   0x08
+#elif CFG_TUSB_MCU == OPT_MCU_NRF5X
+  // ISO endpoints for NRF5x are fixed to 0x08 (0x88)
+  #define EPNUM_AUDIO_IN    0x08
+  #define EPNUM_AUDIO_OUT   0x08
+
+#elif CFG_TUSB_MCU == OPT_MCU_SAMG  || CFG_TUSB_MCU ==  OPT_MCU_SAMX7X
+  // SAMG & SAME70 don't support a same endpoint number with different direction IN and OUT
+  //    e.g EP1 OUT & EP1 IN cannot exist together
+  #define EPNUM_AUDIO_IN    0x01
+  #define EPNUM_AUDIO_OUT   0x02
+
+#elif CFG_TUSB_MCU == OPT_MCU_FT90X || CFG_TUSB_MCU == OPT_MCU_FT93X
+  // FT9XX doesn't support a same endpoint number with different direction IN and OUT
+  //    e.g EP1 OUT & EP1 IN cannot exist together
+  #define EPNUM_AUDIO_IN    0x01
+  #define EPNUM_AUDIO_OUT   0x02
 
 #else
-  #define EPNUM_AUDIO   0x01
+  #define EPNUM_AUDIO_IN    0x01
+  #define EPNUM_AUDIO_OUT   0x01
 #endif
 
 uint8_t const desc_configuration[] =
@@ -101,7 +111,7 @@ uint8_t const desc_configuration[] =
     TUD_CONFIG_DESCRIPTOR(1, ITF_NUM_TOTAL, 0, CONFIG_TOTAL_LEN, 0x00, 100),
 
     // Interface number, string index, EP Out & EP In address, EP size
-    TUD_AUDIO_MIC_ONE_CH_DESCRIPTOR(/*_itfnum*/ ITF_NUM_AUDIO_CONTROL, /*_stridx*/ 0, /*_nBytesPerSample*/ CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX, /*_nBitsUsedPerSample*/ CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX*8, /*_epin*/ 0x80 | EPNUM_AUDIO, /*_epsize*/ CFG_TUD_AUDIO_EP_SZ_IN)
+    TUD_AUDIO_HEADSET_STEREO_DESCRIPTOR(2, EPNUM_AUDIO_OUT, EPNUM_AUDIO_IN | 0x80)
 };
 
 // Invoked when received GET CONFIGURATION DESCRIPTOR
@@ -109,7 +119,7 @@ uint8_t const desc_configuration[] =
 // Descriptor contents must exist long enough for transfer to complete
 uint8_t const * tud_descriptor_configuration_cb(uint8_t index)
 {
-  (void) index; // for multiple configurations
+  (void)index; // for multiple configurations
   return desc_configuration;
 }
 
@@ -126,51 +136,20 @@ enum {
 };
 
 // array of pointer to string descriptors
-char const* string_desc_arr [] =
+char const *string_desc_arr[] =
 {
-    (const char[]) { 0x09, 0x04 }, // 0: is supported language is English (0x0409)
-    "PaniRCorp",                   // 1: Manufacturer
-    "MicNode",                     // 2: Product
-    NULL,                          // 3: Serials will use unique ID if possible
-    "UAC2",                        // 4: Audio Interface
-
+  (const char[]) { 0x09, 0x04 },  // 0: is supported language is English (0x0409)
+  "TinyUSB",                      // 1: Manufacturer
+  "TinyUSB headset",              // 2: Product
+  NULL,                           // 3: Serials will use unique ID if possible
+  "TinyUSB Speakers",             // 4: Audio Interface
+  "TinyUSB Microphone",           // 5: Audio Interface
 };
 
 static uint16_t _desc_str[32 + 1];
 
 // Invoked when received GET STRING DESCRIPTOR request
 // Application return pointer to descriptor, whose contents must exist long enough for transfer to complete
-
-
-
-
-static inline size_t board_usb_get_serial(uint16_t desc_str1[], size_t max_chars) {
-    uint8_t uid[16] TU_ATTR_ALIGNED(4);
-    size_t uid_len;
-    //TODO this deleted function
-    // fixed serial string is 01234567889ABCDEF
-    uint32_t* uid32 = (uint32_t*) (uintptr_t) uid;
-    uid32[0] = 0x67452301;
-    uid32[1] = 0xEFCDAB89;
-    uid_len = 8;
-
-    if ( uid_len > max_chars / 2 ) uid_len = max_chars / 2;
-
-    for ( size_t i = 0; i < uid_len; i++ ) {
-        for ( size_t j = 0; j < 2; j++ ) {
-            const char nibble_to_hex[16] = {
-                '0', '1', '2', '3', '4', '5', '6', '7',
-                '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
-            };
-            uint8_t const nibble = (uid[i] >> (j * 4)) & 0xf;
-            desc_str1[i * 2 + (1 - j)] = nibble_to_hex[nibble]; // UTF-16-LE
-        }
-    }
-
-    return 2 * uid_len;
-}
-
-
 uint16_t const *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
   (void) langid;
   size_t chr_count;
