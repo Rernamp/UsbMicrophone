@@ -1,5 +1,4 @@
 target_sources(CommonCode INTERFACE
-    family.c
     main.cpp
 )
 

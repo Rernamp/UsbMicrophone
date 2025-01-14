@@ -23,6 +23,8 @@
         "ch32_usbhs_reg.h": "c",
         "core_riscv.h": "c",
         "tusb_option.h": "c",
-        "usb_descriptors.h": "c"
+        "usb_descriptors.h": "c",
+        "tusb.h": "c",
+        "board_api.h": "c"
     }
 }

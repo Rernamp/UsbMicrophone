@@ -23,37 +23,43 @@ include(Dependencies/Mcu.CMake/riscv/CH32/V307.cmake)
 add_subdirectory(UsbMicrophone)
 
 
-add_library(tinyusb_ch32v307 INTERFACE)
+# add_library(tinyusb_ch32v307 INTERFACE)
 
-target_sources(tinyusb_ch32v307 INTERFACE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/ch32_usbhs_reg.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/dcd_usbhs.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/board_api.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/board.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/debug_uart.c
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/debug_uart.h
-    # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/dcd_template.c 
-    # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/hcd_template.c
-)
+# target_sources(tinyusb_ch32v307 INTERFACE 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/ch32_usbhs_reg.h
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/ch32v307/dcd_usbhs.c
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/board_api.h
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/board.h
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/debug_uart.c
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/debug_uart.h
+#     # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/dcd_template.c 
+#     # ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/src/portable/template/hcd_template.c
+# )
 
-target_include_directories(tinyusb_ch32v307 INTERFACE 
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw
-    ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/
-)
+# target_include_directories(tinyusb_ch32v307 INTERFACE 
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw
+#     ${CMAKE_CURRENT_SOURCE_DIR}/Dependencies/tinyusb/hw/bsp/ch32v307/boards/ch32v307v_r1_1v0/
+# )
  
-target_link_libraries(tinyusb_config INTERFACE 
-    tinyusb_ch32v307
-    ch32v307_tinyusb_platform
-)
+# target_link_libraries(tinyusb_config INTERFACE 
+#     tinyusb_ch32v307
+#     ch32v307_tinyusb_platform
+# )
 target_compile_definitions(tinyusb_config INTERFACE CFG_TUSB_MCU=OPT_MCU_CH32V307)
 
+set(FAMILY ch32v307)
+set(BOARD ch32v307v_r1_1v0)
+
 add_subdirectory(Dependencies/tinyusb/src)
+include(Dependencies/tinyusb/hw/bsp/family_support.cmake)
 
 
 target_link_libraries(CommonCode INTERFACE
     CH32::V307
     tinyusb    
 )
+
+family_initialize_project(CommonCode ${CMAKE_CURRENT_LIST_DIR})
 
 if(NOT (TARGET GCC::Specs::NoSys))
     add_library(GCC::Specs::NoSys INTERFACE IMPORTED)
@@ -84,3 +90,5 @@ function(gcc_add_linker_script TARGET VISIBILITY SCRIPT_PATH)
 endfunction()
 
 gcc_add_linker_script(Application PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/UsbMicrophone/Platform/Ld/Link.ld")
+
+family_configure_example(Application noos)
