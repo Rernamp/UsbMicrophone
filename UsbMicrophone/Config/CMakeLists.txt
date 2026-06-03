@@ -10,14 +10,14 @@ target_sources(tinyusb_config INTERFACE
 )
 
 
-target_include_directories(CommonCode INTERFACE
+target_include_directories(UsbMicrophoneCode INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-target_sources(CommonCode INTERFACE
+target_sources(UsbMicrophoneCode INTERFACE
     FreeRTOSConfig.h
 )
 
-target_link_libraries(CommonCode INTERFACE
+target_link_libraries(UsbMicrophoneCode INTERFACE
     tinyusb_config
 )

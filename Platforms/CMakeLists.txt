@@ -1,0 +1,1 @@
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CH32V307-R1-1v1)
