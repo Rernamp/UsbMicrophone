@@ -18,10 +18,23 @@ target_link_libraries(Platform_CH32V307-R1-1v1 INTERFACE
     # FreertosCH32V307
 )
 
+target_include_directories(Platform_CH32V307-R1-1v1 INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
 
 
 target_sources(Platform_CH32V307-R1-1v1 INTERFACE 
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.Init.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Platform.SystemTimer.cpp
+)
+
+
+add_subdirectory(TinyusbPart)
+
+
+target_link_libraries(Platform_CH32V307-R1-1v1 INTERFACE
+    Platform_CH32V307::Tinyusb
 )
