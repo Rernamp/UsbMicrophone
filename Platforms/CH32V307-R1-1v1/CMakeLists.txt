@@ -29,6 +29,7 @@ target_sources(Platform_CH32V307-R1-1v1 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.h
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.Init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.SystemTimer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/Platform.Interrupts.cpp
 )
 
 

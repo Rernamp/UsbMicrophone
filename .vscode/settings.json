@@ -1,6 +1,6 @@
 {
-    "cortex-debug.openocdPath": "C:\\MounRiver\\MounRiver_Studio\\toolchain\\OpenOCD\\bin\\openocd.exe",
-    "cortex-debug.gdbPath": "C:\\MounRiver\\MounRiver_Studio\\toolchain\\RISC-V Embedded GCC\\bin\\riscv-none-embed-gdb.exe",
+    "cortex-debug.openocdPath": "C:\\MounRiver\\MounRiver_Studio2\\resources\\app\\resources\\win32\\components\\WCH\\OpenOCD\\OpenOCD\\bin\\openocd.exe",
+    "cortex-debug.gdbPath": "C:\\MounRiver\\MounRiver_Studio2\\resources\\app\\resources\\win32\\components\\WCH\\Toolchain\\RISC-V Embedded GCC12\\bin\\riscv-wch-elf-gdb.exe",
     "files.associations": {
         "sync.h": "c",
         "assert.h": "c",
