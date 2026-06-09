@@ -6,3 +6,6 @@
 	url = https://github.com/hathach/tinyusb.git
     tags = 0.20.0
 
+[submodule "Dependencies/Mcu.CMake"]
+	path = Dependencies/Mcu.CMake
+	url = https://github.com/Rernamp/Mcu.CMake.git
