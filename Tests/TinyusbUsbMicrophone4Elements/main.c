@@ -38,7 +38,31 @@
 
 #include "bsp/board_api.h"
 #include "tusb.h"
-#include "tusb_config.h"
+
+#ifdef ESP_PLATFORM
+  // ESP-IDF need "freertos/" prefix in include path.
+  // CFG_TUSB_OS_INC_PATH should be defined accordingly.
+  #include "freertos/FreeRTOS.h"
+  #include "freertos/queue.h"
+  #include "freertos/semphr.h"
+  #include "freertos/task.h"
+  #include "freertos/timers.h"
+
+  #define USBD_STACK_SIZE 4096
+#else
+
+  #include "FreeRTOS.h"
+  #include "queue.h"
+  #include "semphr.h"
+  #include "task.h"
+  #include "timers.h"
+
+  // Increase stack size when debug log is enabled
+  #define USBD_STACK_SIZE (4 * configMINIMAL_STACK_SIZE / 2) * (CFG_TUSB_DEBUG ? 2 : 1)
+#endif
+
+#define BLINKY_STACK_SIZE configMINIMAL_STACK_SIZE
+#define AUDIO_STACK_SIZE configMINIMAL_STACK_SIZE
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
@@ -56,6 +80,18 @@ enum {
   BLINK_SUSPENDED = 2500,
 };
 
+// static task
+#if configSUPPORT_STATIC_ALLOCATION
+StackType_t blinky_stack[BLINKY_STACK_SIZE];
+StaticTask_t blinky_taskdef;
+
+StackType_t usb_device_stack[USBD_STACK_SIZE];
+StaticTask_t usb_device_taskdef;
+
+StackType_t audio_stack[AUDIO_STACK_SIZE];
+StaticTask_t audio_taskdef;
+#endif
+
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
 // Audio controls
@@ -72,20 +108,13 @@ audio20_control_range_4_n_t(1) sampleFreqRng;                                   
 // Audio test data, 4 channels muxed together, buffer[0] for CH0, buffer[1] for CH1, buffer[2] for CH2, buffer[3] for CH3
 uint16_t i2s_dummy_buffer[CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX * CFG_TUD_AUDIO_FUNC_1_SAMPLE_RATE / 1000];
 
-void led_blinking_task(void);
-void audio_task(void);
+void led_blinking_task(void *param);
+void usb_device_task(void *param);
+void audio_isr_task(void *param);
 
 /*------------- MAIN -------------*/
 int main(void) {
   board_init();
-
-  // init device stack on configured roothub port
-  tusb_rhport_init_t dev_init = {
-      .role = TUSB_ROLE_DEVICE,
-      .speed = TUSB_SPEED_AUTO};
-  tusb_init(BOARD_TUD_RHPORT, &dev_init);
-
-  board_init_after_tusb();
 
   // Init values
   sampFreq = AUDIO_SAMPLE_RATE;
@@ -112,10 +141,55 @@ int main(void) {
     *p_buff++ = (uint16_t) ((int16_t) (sinf(t) * 750) + 6000);
   }
 
+#if configSUPPORT_STATIC_ALLOCATION
+  // blinky task
+  xTaskCreateStatic(led_blinking_task, "blinky", BLINKY_STACK_SIZE, NULL, 1, blinky_stack, &blinky_taskdef);
+
+  // Create a task for tinyusb device stack
+  xTaskCreateStatic(usb_device_task, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, usb_device_stack, &usb_device_taskdef);
+
+  // Audio receive (I2S) ISR simulation
+  // To simulate a ISR the priority is set to the highest
+  xTaskCreateStatic(audio_isr_task, "audio", AUDIO_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, audio_stack, &audio_taskdef);
+#else
+  xTaskCreate(led_blinking_task, "blinky", BLINKY_STACK_SIZE, NULL, 1, NULL);
+  xTaskCreate(usb_device_task, "usbd", USBD_STACK_SIZE, NULL, configMAX_PRIORITIES - 2, NULL);
+  xTaskCreate(audio_isr_task, "audio", AUDIO_STACK_SIZE, NULL, configMAX_PRIORITIES - 1, NULL);
+#endif
+
+  // only start scheduler for non-espressif mcu
+  #ifndef ESP_PLATFORM
+    vTaskStartScheduler();
+  #endif
+
+  return 0;
+}
+
+#ifdef ESP_PLATFORM
+void app_main(void) {
+  main();
+}
+#endif
+
+// USB Device Driver task
+// This top level thread process all usb events and invoke callbacks
+void usb_device_task(void *param) {
+  (void) param;
+
+  // init device stack on configured roothub port
+  // This should be called after scheduler/kernel is started.
+  // Otherwise it could cause kernel issue since USB IRQ handler does use RTOS queue API.
+  tusb_rhport_init_t dev_init = {
+      .role = TUSB_ROLE_DEVICE,
+      .speed = TUSB_SPEED_AUTO};
+  tusb_init(BOARD_TUD_RHPORT, &dev_init);
+
+  board_init_after_tusb();
+
+  // RTOS forever loop
   while (1) {
-    tud_task();// tinyusb device task
-    led_blinking_task();
-    audio_task();
+    // tinyusb device task
+    tud_task();
   }
 }
 
@@ -150,17 +224,15 @@ void tud_resume_cb(void) {
 // AUDIO Task
 //--------------------------------------------------------------------+
 
-// This task simulates an audio receive callback, one frame is received every 1ms.
+// This task simulates an audio receive ISR, one frame is received every 1ms.
 // We assume that the audio data is read from an I2S buffer.
 // In a real application, this would be replaced with actual I2S receive callback.
-void audio_task(void) {
-  static uint32_t start_ms = 0;
-  uint32_t curr_ms = board_millis();
-  if (start_ms == curr_ms) {
-    return; // not enough time
+void audio_isr_task(void *param) {
+  (void) param;
+  while (1) {
+    vTaskDelay(1);
+    tud_audio_write(i2s_dummy_buffer, AUDIO_SAMPLE_RATE / 1000 * CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX * CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX);
   }
-  start_ms = curr_ms;
-  tud_audio_write(i2s_dummy_buffer, AUDIO_SAMPLE_RATE / 1000 * CFG_TUD_AUDIO_FUNC_1_N_BYTES_PER_SAMPLE_TX * CFG_TUD_AUDIO_FUNC_1_N_CHANNELS_TX);
 }
 
 //--------------------------------------------------------------------+
@@ -231,16 +303,15 @@ bool tud_audio_set_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
 
         mute[channelNum] = ((audio20_control_cur_1_t *) pBuff)->bCur;
 
-        TU_LOG2("    Set Mute: %d of channel: %u\r\n", mute[channelNum], channelNum);
+        TU_LOG1("    Set Mute: %d of channel: %u\r\n", mute[channelNum], channelNum);
         return true;
 
       case AUDIO20_FU_CTRL_VOLUME:
         // Request uses format layout 2
         TU_VERIFY(p_request->wLength == sizeof(audio20_control_cur_2_t));
 
-        volume[channelNum] = (uint16_t) ((audio20_control_cur_2_t *) pBuff)->bCur;
-
-        TU_LOG2("    Set Volume: %d dB of channel: %u\r\n", volume[channelNum], channelNum);
+        volume[channelNum] = ((audio20_control_cur_2_t *) pBuff)->bCur;
+        TU_LOG1("    Set Volume: %d dB of channel: %u\r\n", volume[channelNum], channelNum);
         return true;
 
         // Unknown/Unsupported control
@@ -264,8 +335,6 @@ bool tud_audio_get_req_ep_cb(uint8_t rhport, tusb_control_request_t const *p_req
   (void) channelNum;
   (void) ctrlSel;
   (void) ep;
-
-  //	return tud_control_xfer(rhport, p_request, &tmp, 1);
 
   return false;// Yet not implemented
 }
@@ -305,10 +374,10 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
 
         // Those are dummy values for now
         ret.bNrChannels = 1;
-        ret.bmChannelConfig = (audio20_channel_config_t) 0;
+        ret.bmChannelConfig = 0;
         ret.iChannelNames = 0;
 
-        TU_LOG2("    Get terminal connector\r\n");
+        TU_LOG1("    Get terminal connector\r\n");
 
         return tud_audio_buffer_and_schedule_control_xfer(rhport, p_request, (void *) &ret, sizeof(ret));
       } break;
@@ -326,17 +395,17 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
       case AUDIO20_FU_CTRL_MUTE:
         // Audio control mute cur parameter block consists of only one byte - we thus can send it right away
         // There does not exist a range parameter block for mute
-        TU_LOG2("    Get Mute of channel: %u\r\n", channelNum);
+        TU_LOG1("    Get Mute of channel: %u\r\n", channelNum);
         return tud_control_xfer(rhport, p_request, &mute[channelNum], 1);
 
       case AUDIO20_FU_CTRL_VOLUME:
         switch (p_request->bRequest) {
           case AUDIO20_CS_REQ_CUR:
-            TU_LOG2("    Get Volume of channel: %u\r\n", channelNum);
+            TU_LOG1("    Get Volume of channel: %u\r\n", channelNum);
             return tud_control_xfer(rhport, p_request, &volume[channelNum], sizeof(volume[channelNum]));
 
           case AUDIO20_CS_REQ_RANGE:
-            TU_LOG2("    Get Volume range of channel: %u\r\n", channelNum);
+            TU_LOG1("    Get Volume range of channel: %u\r\n", channelNum);
 
             // Copy values - only for testing - better is version below
             audio20_control_range_2_n_t(1) ret;
@@ -369,12 +438,12 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
         // channelNum is always zero in this case
         switch (p_request->bRequest) {
           case AUDIO20_CS_REQ_CUR:
-            TU_LOG2("    Get Sample Freq.\r\n");
+            TU_LOG1("    Get Sample Freq.\r\n");
             // Buffered control transfer is needed for IN flow control to work
             return tud_audio_buffer_and_schedule_control_xfer(rhport, p_request, &sampFreq, sizeof(sampFreq));
 
           case AUDIO20_CS_REQ_RANGE:
-            TU_LOG2("    Get Sample Freq. range\r\n");
+            TU_LOG1("    Get Sample Freq. range\r\n");
             return tud_control_xfer(rhport, p_request, &sampleFreqRng, sizeof(sampleFreqRng));
 
             // Unknown/Unsupported control
@@ -386,7 +455,7 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
 
       case AUDIO20_CS_CTRL_CLK_VALID:
         // Only cur attribute exists for this request
-        TU_LOG2("    Get Sample Freq. valid\r\n");
+        TU_LOG1("    Get Sample Freq. valid\r\n");
         return tud_control_xfer(rhport, p_request, &clkValid, sizeof(clkValid));
 
       // Unknown/Unsupported control
@@ -396,23 +465,22 @@ bool tud_audio_get_req_entity_cb(uint8_t rhport, tusb_control_request_t const *p
     }
   }
 
-  TU_LOG2("  Unsupported entity: %d\r\n", entityID);
+  TU_LOG1("  Unsupported entity: %d\r\n", entityID);
   return false;// Yet not implemented
 }
 
-//--------------------------------------------------------------------+
+///--------------------------------------------------------------------+
 // BLINKING TASK
 //--------------------------------------------------------------------+
-void led_blinking_task(void) {
-  static uint32_t start_ms = 0;
+void led_blinking_task(void *param) {
+  (void) param;
   static bool led_state = false;
 
-  // Blink every interval ms
-  if (board_millis() - start_ms < blink_interval_ms) {
-    return; // not enough time
-  }
-  start_ms += blink_interval_ms;
+  while (1) {
+    // Blink every interval ms
+    vTaskDelay(blink_interval_ms / portTICK_PERIOD_MS);
 
-  board_led_write(led_state);
-  led_state = 1 - led_state;// toggle
+    board_led_write(led_state);
+    led_state = 1 - led_state;// toggle
+  }
 }

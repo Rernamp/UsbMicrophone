@@ -5,10 +5,6 @@
 
 #include "Platform.h"
 
-uint32_t board_millis(void) {
-    return Platform::SystemTimer::now_ms();
-}
-
 void board_init(void) {
     Platform::init();
 }

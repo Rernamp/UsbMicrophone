@@ -1,7 +1,7 @@
 #include "Platform.h"
 
-#include "ch32v30x.h"
-#include "ch32v30x_rcc.h"
+#include <ch32v30x.h>
+#include <ch32v30x_rcc.h>
 
 #include "common/tusb_common.h"
 
@@ -27,10 +27,6 @@ namespace Platform {
         bool result{true};
 
         __disable_irq();
-
-#if CFG_TUSB_OS == OPT_OS_NONE
-        SysTick_Config(SystemCoreClock / 1000);
-#endif
 
 #ifdef CH32V30x_D8C
         // v305/v307: Highspeed USB
