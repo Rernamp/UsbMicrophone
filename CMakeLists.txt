@@ -30,7 +30,6 @@ add_subdirectory(UsbMicrophone)
 
 add_executable(UsbMicrophone)
 
-tinyusb_target_add(UsbMicrophone)
 target_link_libraries(UsbMicrophone PUBLIC
     UsbMicrophoneCode
     Platform_CH32V307-R1-1v1
@@ -40,7 +39,6 @@ add_subdirectory(Tests)
 
 add_executable(TestTinyusbUsbMicrophone4Elements)
 
-tinyusb_target_add(TestTinyusbUsbMicrophone4Elements)
 target_link_libraries(TestTinyusbUsbMicrophone4Elements PUBLIC
     Test::TinyusbUsbMicrophone4Elements::Code
     Platform_CH32V307-R1-1v1

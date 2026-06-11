@@ -9,6 +9,9 @@ target_compile_definitions(Platform_CH32V307-R1-1v1 INTERFACE
     CFG_TUD_WCH_USBIP_USBHS=1
 )
 
+tinyusb_sources_get(TINYUSB_SRC)
+
+
 add_subdirectory(SDKPart)
 
 target_link_libraries(Platform_CH32V307-R1-1v1 INTERFACE
@@ -21,6 +24,7 @@ target_link_libraries(Platform_CH32V307-R1-1v1 INTERFACE
 
 target_include_directories(Platform_CH32V307-R1-1v1 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${CMAKE_SOURCE_DIR}/Dependencies/tinyusb/src
 )
 
 
@@ -31,6 +35,7 @@ target_sources(Platform_CH32V307-R1-1v1 INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.Init.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.SystemTimer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.Interrupts.cpp
+    ${TINYUSB_SRC}
 )
 
 
