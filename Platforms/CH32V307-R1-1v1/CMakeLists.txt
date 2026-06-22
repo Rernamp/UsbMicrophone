@@ -2,13 +2,6 @@ add_library(Platform_CH32V307-R1-1v1 INTERFACE)
 
 add_library(Platform::CH32V307-R1-1v1 ALIAS Platform_CH32V307-R1-1v1)
 
-
-target_compile_definitions(Platform_CH32V307-R1-1v1 INTERFACE
-    CFG_TUSB_MCU=OPT_MCU_CH32V307
-    CFG_TUSB_OS=OPT_OS_FREERTOS
-    CFG_TUD_WCH_USBIP_USBHS=1
-)
-
 add_subdirectory(SDKPart)
 
 target_link_libraries(Platform_CH32V307-R1-1v1 INTERFACE

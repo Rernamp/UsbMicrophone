@@ -3,7 +3,6 @@ add_library(Platform_CH32V307::Tinyusb ALIAS Platform_CH32V307_Tinyusb)
 
 tinyusb_sources_get(TINYUSB_SRC)
 
-
 target_sources(Platform_CH32V307_Tinyusb INTERFACE
     ${CMAKE_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/dcd_ch32_usbhs.c
     ${CMAKE_SOURCE_DIR}/Dependencies/tinyusb/src/portable/wch/dcd_ch32_usbfs.c
@@ -20,3 +19,8 @@ target_sources(Platform_CH32V307_Tinyusb INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/Platform.Usb.Interrupts.cpp
 )
 
+target_compile_definitions(Platform_CH32V307_Tinyusb INTERFACE
+    CFG_TUSB_MCU=OPT_MCU_CH32V307
+    CFG_TUSB_OS=OPT_OS_FREERTOS
+    CFG_TUD_WCH_USBIP_USBHS=1
+)
