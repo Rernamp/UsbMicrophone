@@ -70,7 +70,8 @@
 
 #ifndef FREERTOS_CONFIG_H
 #define FREERTOS_CONFIG_H
-#include "ch32v30x.h"
+
+#include <ch32v30x.h>
 
 /*-----------------------------------------------------------
  * Application specific definitions.
@@ -94,10 +95,11 @@
 #define configUSE_IDLE_HOOK				0
 #define configUSE_TICK_HOOK				0
 #define configCPU_CLOCK_HZ				SystemCoreClock
+//#define configTICK_RATE_HZ				( ( TickType_t ) 500 )
 #define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES			( 15 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 256 ) /* Can be as low as 60 but some of the demo tasks that use this constant require it to be higher. */
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 12 * 1024 ) )
+#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 24 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 16 )
 #define configUSE_TRACE_FACILITY		0
 #define configUSE_16_BIT_TICKS			0
@@ -145,7 +147,7 @@ header file. */
 #define configASSERT( x ) if( ( x ) == 0 ) { taskDISABLE_INTERRUPTS(); while(1); }
 
 /* Map to the platform printf function. */
-#define configPRINT_STRING( pcString )  printf( pcString )
+#define configPRINT_STRING( pcString )  
 
 
 #endif /* FREERTOS_CONFIG_H */

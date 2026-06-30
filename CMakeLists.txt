@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 	set(ToolchainFilePath "${CMAKE_CURRENT_LIST_DIR}/Dependencies/Mcu.Cmake/riscv/riscv_gcc.cmake")
 	if(EXISTS ${ToolchainFilePath})
@@ -32,8 +34,9 @@ add_executable(UsbMicrophone)
 
 target_link_libraries(UsbMicrophone PUBLIC
     UsbMicrophoneCode
-    Platform_CH32V307-R1-1v1
-    Platform_CH32V307::Tinyusb
+    Platform::CH32V307-R1-1v1
+    Platform_CH32V307::Tinyusb::Freertos
+    Platform::CH32V307::Freertos
 )
 
 add_subdirectory(Tests)
@@ -42,13 +45,34 @@ add_executable(TestTinyusbUsbMicrophone4Elements)
 
 target_link_libraries(TestTinyusbUsbMicrophone4Elements PUBLIC
     Test::TinyusbUsbMicrophone4Elements::Code
-    Platform_CH32V307::Tinyusb
-    Platform_CH32V307-R1-1v1
+    Platform_CH32V307::Tinyusb::Freertos
+    Platform::CH32V307-R1-1v1
+    Platform::CH32V307::Freertos
+)
+
+add_executable(TestTinyusbUsbMicrophone4ElementsNoos)
+
+target_link_libraries(TestTinyusbUsbMicrophone4ElementsNoos PUBLIC
+    Test::TinyusbUsbMicrophone4Elements::Noos::Code
+    Platform_CH32V307::Tinyusb::Noos
+    Platform::CH32V307::Noos
+    Platform::CH32V307-R1-1v1
 )
 
 add_executable(TestFreeRtosBlink)
 
 target_link_libraries(TestFreeRtosBlink PUBLIC
     Test::FreeRtosBlink::Code
-    Platform_CH32V307-R1-1v1
+    Platform::CH32V307-R1-1v1
+    Platform::CH32V307::Freertos
 )
+
+
+add_executable(TestNoosBlink)
+
+target_link_libraries(TestNoosBlink PUBLIC
+    Test::NoosBlink::Code
+    Platform::CH32V307-R1-1v1
+    Platform::CH32V307::Noos
+)
+

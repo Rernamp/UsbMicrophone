@@ -1,2 +1,4 @@
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TinyusbUsbMicrophone4Elements)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/TinyusbUsbMicrophone4ElementsNoos)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/FreeRtosBlink)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/NoosBlink)

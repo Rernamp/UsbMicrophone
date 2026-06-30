@@ -2,12 +2,14 @@
 * File Name          : system_ch32v30x.c
 * Author             : WCH
 * Version            : V1.0.0
-* Date               : 2021/06/06
+* Date               : 2024/03/06
 * Description        : CH32V30x Device Peripheral Access Layer System Source File.
 *                      For HSE = 8Mhz
+*********************************************************************************
 * Copyright (c) 2021 Nanjing Qinheng Microelectronics Co., Ltd.
-* SPDX-License-Identifier: Apache-2.0
-*********************************************************************************/
+* Attention: This software (modified or not) and binary are used for 
+* microcontroller manufactured by Nanjing Qinheng Microelectronics.
+*******************************************************************************/
 #include "ch32v30x.h" 
 
 /* 
@@ -15,13 +17,13 @@
 * reset the HSI is used as SYSCLK source).
 * If none of the define below is enabled, the HSI is used as System clock source. 
 */
-//#define SYSCLK_FREQ_HSE    HSE_VALUE
+// #define SYSCLK_FREQ_HSE    HSE_VALUE
 //#define SYSCLK_FREQ_48MHz_HSE  48000000
 //#define SYSCLK_FREQ_56MHz_HSE  56000000
 //#define SYSCLK_FREQ_72MHz_HSE  72000000
-#define SYSCLK_FREQ_96MHz_HSE  96000000
+//#define SYSCLK_FREQ_96MHz_HSE  96000000
 //#define SYSCLK_FREQ_120MHz_HSE  120000000
-//#define SYSCLK_FREQ_144MHz_HSE  144000000
+#define SYSCLK_FREQ_144MHz_HSE  144000000
 //#define SYSCLK_FREQ_HSI    HSI_VALUE
 //#define SYSCLK_FREQ_48MHz_HSI  48000000
 //#define SYSCLK_FREQ_56MHz_HSI  56000000
@@ -110,15 +112,11 @@ void SystemInit (void)
 {
   RCC->CTLR |= (uint32_t)0x00000001;
 
-#ifdef CH32V30x_D8C
-  RCC->CFGR0 &= (uint32_t)0xF8FF0000;
-#else
   RCC->CFGR0 &= (uint32_t)0xF0FF0000;
-#endif 
 
   RCC->CTLR &= (uint32_t)0xFEF6FFFF;
   RCC->CTLR &= (uint32_t)0xFFFBFFFF;
-  RCC->CFGR0 &= (uint32_t)0xFF80FFFF;
+  RCC->CFGR0 &= (uint32_t)0xFF00FFFF;
 
 #ifdef CH32V30x_D8C
   RCC->CTLR &= (uint32_t)0xEBFFFFFF;
@@ -210,6 +208,7 @@ void SystemCoreClockUpdate (void)
  */
 static void SetSysClock(void)
 {
+  //GPIO_IPD_Unused();
 #ifdef SYSCLK_FREQ_HSE
     SetSysClockToHSE();
 #elif defined SYSCLK_FREQ_48MHz_HSE

@@ -15,7 +15,6 @@ target_link_libraries(PlatformCH32V307 INTERFACE
     Platform::CH32V307::Peripheral
     Platform::CH32V307::Startup
     Platform::CH32V307::User
-    Platform::CH32V307::Freertos
 )
 
 gcc_add_linker_script(PlatformCH32V307 INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/Ld/Link.ld")
